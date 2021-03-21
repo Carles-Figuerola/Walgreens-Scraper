@@ -1,0 +1,18 @@
+{
+    "smtp_config": {
+        "sender": "me@mydomain.net",
+        "username": "me@mydomain.net",
+        "password": "SECRET",
+        "host": "smtp.mydomain.net",
+        "port": 587
+    },
+    "notifications": {
+        "email": "me@mydomain.net",
+        "number": "5550001234",
+        "carrier": "tmobile"
+    },
+    "zipcodes": [
+        "10001",
+        "10002"
+    ]
+}

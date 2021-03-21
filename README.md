@@ -6,3 +6,12 @@ This project uses Selenium in Python, and I specifically am using the Google Chr
 
 ## How to run:
 Right now, I am simply making a call to my function in the main area of my Python file, although you could add user input if desired. If you would like to try to use this program, you can simply modify the parameters in the "watchZipCode" function call in main. I am using a yahoo email to send emails to phone numbers and emails. If you would like to use a different service, you will need to modify the sendText function.
+
+### Docker
+
+Edit the `config.json` file to have your settings. If you don't want email or text notifications, remove the `email` field or `number` & `carrier` fields from the config. 
+
+```
+docker build -t walgreens-scraper .
+docker run -ti -v $PWD/config.json:/config.json walgreens-scraper:latest
+```
