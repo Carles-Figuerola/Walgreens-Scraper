@@ -19,6 +19,8 @@
         "minwait": 90,
         "maxwait": 120,
         "max_found_counter": 4,
-        "foundwait": 60
+        "foundwait": 60,
+        "errorwait": 600,
+        "max_errors": 20
     }
 }

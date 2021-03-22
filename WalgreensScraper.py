@@ -19,6 +19,8 @@ minwait = 90
 maxwait = 120
 max_found_counter = 5
 foundwait = 60
+errorwait = 600
+max_errors = 20
 
 def watchZipCode(zips, notifications, smtp_config):
     global driver
@@ -50,10 +52,15 @@ def watchZipCode(zips, notifications, smtp_config):
         else:
             wait_time = random.randrange(minwait, maxwait)
 
+        if error_counter > 0:
+            time.sleep(errorwait)
+            continue
+
+        if error_counter > max_errors:
+            raise Exception("Too many retries, quitting")
+
         for zipCode in zips:
             logging.info(f"Searching for zipCode: {zipCode}")
-            if error_counter > 60:
-                raise Exception("Too many retries, quitting")
             driver.get("https://www.walgreens.com/findcare/vaccination/covid-19/location-screening")
             try:
                 element = driver.find_element_by_id("inputLocation")
@@ -158,6 +165,10 @@ if __name__ == "__main__":
             max_found_counter = config['settings']['max_found_counter']
         if 'foundwait' in config['settings']:
             foundwait = config['settings']['foundwait']
+        if 'errorwait' in config['settings']:
+            errorwait = config['settings']['errorwait']
+        if 'max_errors' in config['settings']:
+            max_errors = config['settings']['max_errors']
     try:
         watchZipCode(
             config['zipcodes'],
