@@ -14,5 +14,11 @@
     "zipcodes": [
         "10001",
         "10002"
-    ]
+    ],
+    "settings": {
+        "minwait": 90,
+        "maxwait": 120,
+        "max_found_counter": 4,
+        "foundwait": 60
+    }
 }

@@ -9,15 +9,20 @@ import json
 import sys
 import logging
 
-driver = ''
-counter = 0
+# Shared variables
+driver = None
+error_counter = 0
+found_counter = 0
+
+# Configurable settings
 minwait = 90
 maxwait = 120
-found_counter = 0
+max_found_counter = 5
+foundwait = 60
 
 def watchZipCode(zips, notifications, smtp_config):
     global driver
-    global counter
+    global error_counter
     global found_counter
     
     hasBeenSeen = {}
@@ -40,28 +45,32 @@ def watchZipCode(zips, notifications, smtp_config):
     driver.get("https://www.walgreens.com/findcare/vaccination/covid-19/location-screening")
     while True:
 
+        if found_counter > 0:
+            wait_time = foundwait
+        else:
+            wait_time = random.randrange(minwait, maxwait)
+
         for zipCode in zips:
             logging.info(f"Searching for zipCode: {zipCode}")
-            if counter > 60:
+            if error_counter > 60:
                 raise Exception("Too many retries, quitting")
             driver.get("https://www.walgreens.com/findcare/vaccination/covid-19/location-screening")
             try:
                 element = driver.find_element_by_id("inputLocation")
             except NoSuchElementException:
-                logging.info(f"Could not find inputLocation element")
-                logging.info(driver.page_source.encode("utf-8"))
-                counter = counter + 1
-                time.sleep(random.randrange(minwait, maxwait))
+                logging.error(f"Could not find inputLocation element")
+                logging.error(driver.page_source.encode("utf-8"))
+                error_counter = error_counter + 1
+                time.sleep(wait_time)
                 continue
             element.clear()
             element.send_keys(zipCode)
-            logging.info(f"Sent zipcode: {zipCode}")
             try:
                 button = driver.find_element_by_css_selector("button.btn")
             except NoSuchElementException:
-                logging.info(f"Could not find button.btn element")
-                counter = counter + 1
-                time.sleep(random.randrange(minwait, maxwait ))
+                logging.error(f"Could not find button.btn element")
+                error_counter = error_counter + 1
+                time.sleep(wait_time)
                 continue
             button.click()
             time.sleep(0.75)
@@ -73,7 +82,7 @@ def watchZipCode(zips, notifications, smtp_config):
                 message = "APPOINTMENT FOUND! ZIP CODE: "+zipCode
                 found_counter = found_counter + 1
                 logging.info(f"Found {found_counter} times")
-                if found_counter >= 2:
+                if found_counter >= max_found_counter:
                     logging.info("Found twice in a row, sending message")
                     sendText(notifications, smtp_config, message)
                     hasBeenSeen[zipCode] = True
@@ -82,7 +91,7 @@ def watchZipCode(zips, notifications, smtp_config):
                 found_counter = 0
                 hasBeenSeen[zipCode] = False
 
-        time.sleep(random.randrange(minwait, maxwait))
+        time.sleep(wait_time)
 
 
 def getAlertElement(driver):
@@ -140,6 +149,15 @@ if __name__ == "__main__":
         exit(1)
     with open(sys.argv[1], 'r') as fd:
         config = json.load(fd)
+    if 'settings' in config:
+        if 'minwait' in config['settings']:
+            minwait = config['settings']['minwait']
+        if 'maxwait' in config['settings']:
+            maxwait = config['settings']['maxwait']
+        if 'max_found_counter' in config['settings']:
+            max_found_counter = config['settings']['max_found_counter']
+        if 'foundwait' in config['settings']:
+            foundwait = config['settings']['foundwait']
     try:
         watchZipCode(
             config['zipcodes'],
