@@ -20,7 +20,7 @@ maxwait = 120
 max_found_counter = 5
 foundwait = 60
 errorwait = 600
-max_errors = 20
+max_errors = 4
 
 def watchZipCode(zips, notifications, smtp_config):
     global driver
@@ -53,6 +53,7 @@ def watchZipCode(zips, notifications, smtp_config):
             wait_time = random.randrange(minwait, maxwait)
 
         if error_counter > 0:
+            logging.warning(f"We think we got banned, waiting {errorwait} to back off")
             time.sleep(errorwait)
             continue
 
