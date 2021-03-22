@@ -52,8 +52,9 @@ def watchZipCode(zips, notifications, smtp_config):
         else:
             wait_time = random.randrange(minwait, maxwait)
 
-        if error_counter > 0:
+        if error_counter > 1:
             logging.warning(f"We think we got banned, waiting {errorwait} to back off")
+            error_counter = 0
             time.sleep(errorwait)
             continue
 
